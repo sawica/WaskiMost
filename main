@@ -1,0 +1,12 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
+
+int main(){
+
+#tablica watkow
+#twozrenie n wątkow
+#funkcje A B
+#semafor i mutex na most
+
+}
