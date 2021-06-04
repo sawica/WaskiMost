@@ -6,7 +6,7 @@
 #  define PTHREAD_ERRORCHECK_MUTEX_INITIALIZER_NP \
   { { 0, 0, 0, PTHREAD_MUTEX_ERRORCHECK_NP, 0, { 0 } } }
 
-pthread_mutex_t lock = PTHREAD_ERRORCHECK_MUTEX_INITIALIZER_NP;
+pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 
 //pthread_cond_t A_sideBridge = PTHREAD_COND_INITIALIZER;
 //pthread_cond_t B_sideBridge = PTHREAD_COND_INITIALIZER;
@@ -87,7 +87,7 @@ int countCar_bydir(char pom) {
 void *generate(void *id) {
     int tmp;
     tmp =  rand() % 2;
-    int id_num = (int) id;
+    unsigned int id_num = *((unsigned int *) id);
     char dir;
     if (tmp == 0) dir = 'A';
     else dir = 'B';
@@ -174,8 +174,10 @@ int main() {
     int N = 10;
     pthread_t threads[N];
     int rc;
-    for (int i = 0; i <= N; ++i) {
-        rc = pthread_create(&threads[i], NULL, generate, (void *) i);
+    unsigned int ints[N];
+    for (unsigned int i = 0; i <= N; ++i) {
+        ints[i]=i;
+        rc = pthread_create(&threads[i], NULL, generate, &ints[i]);
         if(rc != 0){
             printf("błąd");
             exit(-1);
