@@ -1,6 +1,4 @@
-OBJ = zparametrami.o
+OBJ = zparametrami.c
 all: WaskiMost
 WaskiMost: $(OBJ)
-    gcc $(OBJ) -o WaskiMost
-$(OBJ): clean
-clean: rm -f *.o WaskiMost
+		gcc $(OBJ) -o WaskiMost -pthread

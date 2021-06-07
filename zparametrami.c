@@ -3,13 +3,7 @@
 #include <pthread.h>
 #include <unistd.h>
 
-#  define PTHREAD_ERRORCHECK_MUTEX_INITIALIZER_NP \
-  { { 0, 0, 0, PTHREAD_MUTEX_ERRORCHECK_NP, 0, { 0 } } }
-
 pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
-
-//pthread_cond_t A_sideBridge = PTHREAD_COND_INITIALIZER;
-//pthread_cond_t B_sideBridge = PTHREAD_COND_INITIALIZER;
 pthread_cond_t OnOffBridge = PTHREAD_COND_INITIALIZER;
 
 int counter_A;
@@ -17,12 +11,12 @@ int counter_B;
 int counter_AB;
 int counter_BA;
 
-typedef struct Car {
+ typedef struct Car {
     int car_id;
     char direction;
     struct Car *next;
     struct Car *prev;
-} Car;
+}Car;
 
 Car *head;
 Car *tail;
@@ -131,7 +125,7 @@ void bridge() {
         }
 
         if (on_bridge == 1) {
-            pthread_cond_wait(&OnOffBridge, &lock);
+            pthread_cond_wait(&OnOffBridge, &lock); //nie wchodzi
         } else {
             pthread_cond_signal(&OnOffBridge);
             tmp = head;
@@ -161,7 +155,11 @@ void bridge() {
 }
 
 
+void *generate1(void *id){
+    printf("błąd");
+}
 int main() {
+    printf("błąd");
     head = NULL;
     tail = NULL;
 
@@ -170,7 +168,9 @@ int main() {
     counter_AB = 0;
     counter_BA = 0;
 
+    printf("błąd");
     show();
+
     int N = 10;
     pthread_t threads[N];
     int rc;
@@ -184,7 +184,7 @@ int main() {
         }
     }
 
-    bridge();
+    //bridge();
 
     for (int i = 0; i <= N; ++i) {
         if (pthread_join(threads[i], NULL) != 0) {
