@@ -54,7 +54,7 @@ void show() {
         printf("No cars in line");
     } else
         while (head != NULL) {
-            printf("%d   ", head->car_id);
+            printf("%d s  ", head->car_id);
             head = head->next;
         }
 }
@@ -90,6 +90,7 @@ void *generate(void *id) {
     newCar->car_id = id_num;
     newCar->direction = dir;
     push(newCar);
+    show();
 }
 
 void city(Car *car) {
@@ -119,34 +120,41 @@ void bridge() {
     //Car *tmp = (Car *)malloc(sizeof(Car));
     Car *tmp = NULL;
     while (1) {
-        if (pthread_mutex_lock(&lock) != 0) {
-            printf("błąd");
-            exit(-1);
-        }
+        tmp = head;
 
-        if (on_bridge == 1) {
-            pthread_cond_wait(&OnOffBridge, &lock); //nie wchodzi
-        } else {
-            pthread_cond_signal(&OnOffBridge);
-            tmp = head;
-            if (tmp->direction == 'A') {
-                counter_BA--;
-            } else {
-                counter_AB--;
-            }
-            on_bridge = 1;
-            if (pthread_mutex_unlock(&lock) != 0) {
+        if(tmp->direction == 'A'){
+
+            if (pthread_mutex_lock(&lock) != 0) {
                 printf("błąd");
                 exit(-1);
             }
+            counter_BA--;
             sleep(1);
             pop();
             printResult(tmp);
             city(tmp);
-            on_bridge = 0;
             tmp = NULL;
-        }
+            if (pthread_mutex_unlock(&lock) != 0) {
+                printf("błąd");
+                exit(-1);
+        }}
+            else if(tmp->direction == 'B'){
 
+                if (pthread_mutex_lock(&lock) != 0) {
+                    printf("błąd");
+                    exit(-1);
+                }/*
+                counter_AB--;
+                sleep(1);
+                pop();
+                printResult(tmp);
+                city(tmp);
+                tmp = NULL;*/
+                if (pthread_mutex_unlock(&lock) != 0) {
+                    printf("błąd");
+                    exit(-1);
+                }
+            }
     }
 
     free(tmp);
@@ -159,7 +167,7 @@ void *generate1(void *id){
     printf("błąd");
 }
 int main() {
-    printf("błąd");
+    printf("main1");
     head = NULL;
     tail = NULL;
 
@@ -168,8 +176,8 @@ int main() {
     counter_AB = 0;
     counter_BA = 0;
 
-    printf("błąd");
-    show();
+    printf("main2");
+
 
     int N = 10;
     pthread_t threads[N];
@@ -183,7 +191,7 @@ int main() {
             exit(-1);
         }
     }
-
+    //show();
     //bridge();
 
     for (int i = 0; i <= N; ++i) {

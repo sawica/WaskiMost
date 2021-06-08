@@ -11,7 +11,7 @@ int counter_B;
 int counter_AB;
 int counter_BA;
 
-typedef struct Car {
+ typedef struct Car {
     int car_id;
     char direction;
     struct Car *next;
@@ -54,7 +54,7 @@ void show() {
         printf("No cars in line");
     } else
         while (head != NULL) {
-            printf("%d s  ", head->car_id);
+            printf("%d   ", head->car_id);
             head = head->next;
         }
 }
@@ -78,32 +78,18 @@ int countCar_bydir(char pom) {
     return n;
 }
 
-int car_in_queue(int id) {
-    Car *tmp = head;
-    for (int i = 0; tmp; tmp = tmp->next) {
-        if (tmp->car_id == id) {
-            return 1;
-        }
-    }
-    return 0;
-}
+void *generate(void *id) {
+    int tmp;
+    tmp =  rand() % 2;
+    unsigned int id_num = *((unsigned int *) id);
+    char dir;
+    if (tmp == 0) dir = 'A';
+    else dir = 'B';
 
-Car* getCar(int id) {
-    Car *tmp = head;
-    for (int i = 0; tmp; tmp = tmp->next) {
-        if (tmp->car_id == id) {
-            return tmp;
-        }
-    }
-
-}
-
-int car_on_top(Car *x) {
-    Car *tmp = head;
-        if (tmp == x) {
-            return 1;
-        }
-    return 0;
+    Car *newCar = (Car *) malloc(sizeof(Car));
+    newCar->car_id = id_num;
+    newCar->direction = dir;
+    push(newCar);
 }
 
 void city(Car *car) {
@@ -125,68 +111,55 @@ void city(Car *car) {
         counter_A--;
         counter_AB++;
     }
-   // *bridge(car->car_id);
+
 }
 
-void *bridge(void *id) {
-
-    int id_num = *(int*) id;
-    Car *newCar = (Car *) malloc(sizeof(Car));
-    if(car_in_queue(id_num)==0){
-        int tmp;
-        tmp =  rand() % 2;
-
-        char dir;
-        if (tmp == 0) dir = 'A';
-        else dir = 'B';
-
-
-        newCar->car_id = id_num;
-        newCar->direction = dir;
-        push(newCar);
-    }
-    else{
-        newCar = getCar(id_num);
-    }
-
-    if(car_on_top(newCar)==1 && newCar->direction=='A'){
+void bridge() {
+    int on_bridge = 0;  //mozna pozniej zmienic na true/false
+    //Car *tmp = (Car *)malloc(sizeof(Car));
+    Car *tmp = NULL;
+    while (1) {
         if (pthread_mutex_lock(&lock) != 0) {
             printf("błąd");
             exit(-1);
         }
-        counter_BA--;
-        sleep(1);
-        pop();
-        printResult(newCar);
-        city(newCar);
-        newCar = NULL;
-        if (pthread_mutex_unlock(&lock) != 0) {
-            printf("błąd");
-            exit(-1);
-        }
-    }
-    else if(car_on_top(newCar)==1 && newCar->direction == 'B'){
 
-        if (pthread_mutex_lock(&lock) != 0) {
-            printf("błąd");
-            exit(-1);
-        }
+        if (on_bridge == 1) {
+            pthread_cond_wait(&OnOffBridge, &lock); //nie wchodzi
+        } else {
+            pthread_cond_signal(&OnOffBridge);
+            tmp = head;
+            if (tmp->direction == 'A') {
+                counter_BA--;
+            } else {
                 counter_AB--;
-                sleep(1);
-                pop();
-                printResult(newCar);
-                city(newCar);
-                newCar = NULL;
-        if (pthread_mutex_unlock(&lock) != 0) {
+            }
+            on_bridge = 1;
+
+            sleep(1);
+            pop();
+            printResult(tmp);
+            city(tmp);
+            on_bridge = 0;
+            tmp = NULL;
+        }if (pthread_mutex_unlock(&lock) != 0) {
             printf("błąd");
             exit(-1);
         }
+
     }
+
+    free(tmp);
+
 
 }
 
 
+void *generate1(void *id){
+    printf("błąd");
+}
 int main() {
+    printf("błąd");
     head = NULL;
     tail = NULL;
 
@@ -195,20 +168,23 @@ int main() {
     counter_AB = 0;
     counter_BA = 0;
 
-
+    printf("błąd");
+    show();
 
     int N = 10;
     pthread_t threads[N];
     int rc;
-    int ints[N];
+    unsigned int ints[N];
     for (unsigned int i = 0; i <= N; ++i) {
         ints[i]=i;
-        rc = pthread_create(&threads[i], NULL, bridge, (void *)&ints[i]);
+        rc = pthread_create(&threads[i], NULL, generate, &ints[i]);
         if(rc != 0){
             printf("błąd");
             exit(-1);
         }
     }
+
+    //bridge();
 
     for (int i = 0; i <= N; ++i) {
         if (pthread_join(threads[i], NULL) != 0) {
