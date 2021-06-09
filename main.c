@@ -6,17 +6,17 @@
 pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t queue = PTHREAD_MUTEX_INITIALIZER;
 
-int counter_A=0;
-int counter_B=0;
-int counter_AB=0;
-int counter_BA=0;
+int counter_A = 0;
+int counter_B = 0;
+int counter_AB = 0;
+int counter_BA = 0;
 
 typedef struct Car {
     int car_id;
     char direction;
     struct Car *next;
     struct Car *prev;
-}Car;
+} Car;
 
 Car *head;
 Car *tail;
@@ -74,7 +74,8 @@ void show() {
         while (head != NULL) {
             printf("%d s  ", head->car_id);
             head = head->next;
-        }if (pthread_mutex_unlock(&queue) != 0) {
+        }
+    if (pthread_mutex_unlock(&queue) != 0) {
         printf("błąd");
         exit(-1);
     }
@@ -109,7 +110,7 @@ int car_in_queue(int id) {
     return 0;
 }
 
-Car* getCar() {
+Car *getCar() {
     Car *tmp = head;
     /*for (int i = 0; tmp; tmp = tmp->next) {
         if (tmp->car_id == id) {
@@ -122,9 +123,9 @@ Car* getCar() {
 
 int car_on_top(Car *x) {
     Car *tmp = head;
-        if (tmp == x) {
-            return 1;
-        }
+    if (tmp == x) {
+        return 1;
+    }
     return 0;
 }
 
@@ -134,13 +135,17 @@ void city(Car *car) {
         car->direction = 'B';
         printf("a++");
 
-        counter_A++;printf("%d",counter_A);
+        counter_A++;
+        printf(" a: %d", counter_A);
     } else {
         car->direction = 'A';
         printf("b++");
-        counter_B++;printf("%d",counter_B);
+        counter_B++;
+        printf("b: %d", counter_B);
     }
     int time = rand() % 10;
+    printf(" time: %d ", time);
+    sleep(time);
 
     if (car->direction == 'A') {
         counter_B--;
@@ -148,14 +153,14 @@ void city(Car *car) {
     } else {
         counter_A--;
         counter_AB++;
-    }sleep(time);
+    }
     push(car);
-   // *bridge(car->car_id);
+    // *bridge(car->car_id);
 }
 
 void *generate(void *id) {
     int tmp;
-    tmp =  rand() % 2;
+    tmp = rand() % 2;
     int id_num = *((int *) id);
     char dir;
     if (tmp == 0) dir = 'A';
@@ -169,37 +174,36 @@ void *generate(void *id) {
 }
 
 
-
 void *bridge() {
     Car *newCar = (Car *) malloc(sizeof(Car));
-    while(1){
+    while (1) {
         newCar = getCar();
-        if(car_on_top(newCar)==1 && newCar->direction=='A'){
+        if (car_on_top(newCar) == 1 && newCar->direction == 'A') {
 
             if (pthread_mutex_lock(&lock) != 0) {
                 printf("błąd lock");
                 exit(-1);
             }
             counter_BA--;
-            sleep(1);
+            //sleep(1);
+            //show();
             printResult(newCar);
             pop();
 
-            city(newCar);printResult(newCar);
+            city(newCar);
             newCar = NULL;
             if (pthread_mutex_unlock(&lock) != 0) {
                 printf("błąd lock");
                 exit(-1);
             }
-        }
-        else if(car_on_top(newCar)==1 && newCar->direction == 'B'){
+        } else if (car_on_top(newCar) == 1 && newCar->direction == 'B') {
 
             if (pthread_mutex_lock(&lock) != 0) {
                 printf("błąd lock");
                 exit(-1);
             }
             counter_AB--;
-            sleep(1);
+            //sleep(1);
             pop();
             printResult(newCar);
             city(newCar);
@@ -207,7 +211,9 @@ void *bridge() {
             if (pthread_mutex_unlock(&lock) != 0) {
                 printf("błąd lock ");
                 exit(-1);
-            }}
+            }
+        }
+
         free(newCar);
 
     }
@@ -244,8 +250,8 @@ int main() {
     int rc;
     int ints[N];
     for (int i = 1; i <= N; ++i) {
-        ints[i]=i;
-        if (pthread_create(&threads[i], NULL, generate, (void *)&ints[i]) != 0) {
+        ints[i] = i;
+        if (pthread_create(&threads[i], NULL, generate, (void *) &ints[i]) != 0) {
             printf("błąd create");
             exit(-1);
         }
